@@ -1,85 +1,70 @@
 # Optimistic List Update Demo
 
-A minimal demo showcasing **`useActionState`** and **`useOptimistic`** in React 19 for managing a list and adding items with optimistic UI updates and progressive enhancement.
-
-## What it does
-
-- **List of posts** - Fetched on load via an action (no `useEffect` + `useState` for data).
-- **Add post form** - Uses a form with `action` and `useActionState` for submission, loading state, and error handling.
-- **Optimistic updates** - New posts appear in the list immediately while the “server” request runs; on failure, the UI can reflect the error (form shows error state).
-
-No client-side router, no data library - just React 19 hooks and a small in-memory API for the demo.
+A minimal demo app: **`useActionState`** + **`useOptimistic`** (React 19) for list management and form submissions. Posts list, add-post form with optimistic UI, loading and error state, and an in-memory API for the demo.
 
 ## Stack
 
-| Area     | Choice                  |
-| -------- | ----------------------- |
-| Runtime  | React 19                |
-| Build    | Vite 7                  |
-| Language | TypeScript              |
-| Styling  | Tailwind CSS v4         |
-| Tooling  | ESLint, Prettier, Husky |
+- **React 19**
+- **Vite 7**
+- **TypeScript**
+- **Tailwind CSS 4**
+- **ESLint**, **Prettier**, **Husky**
 
-## How it works
+## Requirements
 
-### `useActionState` for list fetch and form submit
+- Node.js 18+
 
-- **List:** An action that returns the posts list is passed to `useActionState`. The list is loaded in a `useEffect` via `startTransition(() => fetchPosts())`, so you get `[posts, fetchPosts, isPending]` without manual `useState` for the array.
-- **Form:** The add-post form uses `useActionState` with the same pattern: `[state, formAction, isPending]`. The form’s `action={formAction}` drives submission; `isPending` disables inputs and shows “Adding...”; `state` holds `{ ok, error }` for server/validation errors.
+## Quick start
 
-### `useOptimistic` for instant feedback
+1. **Clone and install**
 
-- **State:** `useOptimistic(posts, (state, newPost) => [...state, newPost])` gives `optimisticPosts` and `addOptimisticPost`.
-- **Flow:** On submit, the form action calls `addOptimisticPost(tempPost)` so the new post shows in the list right away. The list renders `optimisticPosts`; when the real `posts` update (after a refetch or state update), React reconciles. If the request fails, the form shows the error (and in a full app you could revert the optimistic item).
+   ```bash
+   git clone <repo-url>
+   cd optimistic-list-update
+   npm install
+   ```
 
-### Data flow (simplified)
+2. **Run**
 
-```
-App
-├── useActionState(fetchPosts)     → posts, fetchPosts, isPending
-├── useOptimistic(posts, reducer)  → optimisticPosts, addOptimisticPost
-├── useEffect → startTransition(fetchPosts)  // initial load
-├── PostList(posts={optimisticPosts})
-└── AddPostForm(addOptimisticPost)
-        └── useActionState(formAction)  → state, formAction, isPending
-                └── form action calls addOptimisticPost(tempPost) then postsApi.create()
-```
+   ```bash
+   npm run dev
+   ```
 
-## Project structure
+   App: [http://localhost:5173](http://localhost:5173). Use “Add Post”; optionally enable “Simulate Fail” to see error handling.
 
-```
-src/
-├── App.tsx                 # useActionState (fetch) + useOptimistic + layout
-├── components/
-│   ├── AddPostForm/        # useActionState (form), calls addOptimisticPost
-│   ├── PostList/           # Renders optimistic list
-│   └── PostItem/           # Single post card
-├── lib/
-│   └── posts.ts            # In-memory API (getAll, create, optional simulateFail)
-└── types/
-    └── posts.ts            # Post, CreatePostInput
-```
+## Project structure (overview)
 
-## Run it
-
-```bash
-npm install
-npm run dev
-```
-
-Then open the app and use “Add Post”. Optionally enable “Simulate Fail” to see error handling.
+- **App** - `src/App.tsx`: `useActionState` for fetching the list, `useOptimistic` for optimistic posts, initial load via `startTransition` + `fetchPosts`.
+- **Form** - `src/components/AddPostForm/`: form with `action` and `useActionState`; calls `addOptimisticPost` then `postsApi.create()`.
+- **List** - `src/components/PostList/`, `PostItem/`: render the (optimistic) posts list.
+- **API** - `src/lib/posts.ts`: in-memory `getAll` and `create` (with optional `simulateFail`).
+- **Types** - `src/types/posts.ts`: `Post`, `CreatePostInput`.
 
 ## Scripts
 
-| Command          | Description          |
-| ---------------- | -------------------- |
-| `npm run dev`    | Start dev server     |
-| `npm run build`  | Type-check + build   |
-| `npm run lint`   | Run ESLint           |
-| `npm run format` | Format with Prettier |
+| Command                | Description           |
+| ---------------------- | --------------------- |
+| `npm run dev`          | Development server    |
+| `npm run build`        | Type-check + build    |
+| `npm run preview`      | Preview production    |
+| `npm run lint`         | ESLint                |
+| `npm run format`       | Prettier (write)      |
+| `npm run format:check` | Prettier (check only) |
+
+## Code quality: Husky
+
+**Husky** is installed and configured via the `prepare` script. Add a `pre-commit` hook (e.g. with **lint-staged**) to run ESLint and Prettier on staged files before each commit if you want the same workflow as in the template.
+
+```bash
+# Hooks are set up on npm install (via "prepare")
+```
 
 ## References
 
 - [React: useActionState](https://react.dev/reference/react/useActionState)
 - [React: useOptimistic](https://react.dev/reference/react/useOptimistic)
 - [React: Form actions and useActionState](https://react.dev/reference/react-dom/components/form#form-action)
+
+## License
+
+MIT (or as needed for your project).
