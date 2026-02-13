@@ -34,11 +34,11 @@ A minimal demo app: **`useActionState`** + **`useOptimistic`** (React 19) for li
 
 ## Project structure (overview)
 
-- **App** - `src/App.tsx`: `useActionState` for fetching the list, `useOptimistic` for optimistic posts, initial load via `startTransition` + `fetchPosts`.
-- **Form** - `src/components/AddPostForm/`: form with `action` and `useActionState`; calls `addOptimisticPost` then `postsApi.create()`.
+- **App** - `src/App.tsx`: list state via `useState`, initial load via `useTransition` + `useEffect` + `postsApi.getAll()`; `useOptimistic` for optimistic posts; `useActionState` for the add-post form (action runs `addOptimisticPost` then `postsApi.create()`). Passes form action, pending state and error to the form.
+- **Form** - `src/components/AddPostForm/`: presentational form; receives `onSubmit` (form action), `isPending`, `error` from App; no form logic inside.
 - **List** - `src/components/PostList/`, `PostItem/`: render the (optimistic) posts list.
 - **API** - `src/lib/posts.ts`: in-memory `getAll` and `create` (with optional `simulateFail`).
-- **Types** - `src/types/posts.ts`: `Post`, `CreatePostInput`.
+- **Types** - `src/types/posts.ts`: `Post`, `CreatePostInput`, `AddPostFormState`.
 
 ## Scripts
 
