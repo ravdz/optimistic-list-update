@@ -4,11 +4,11 @@ A minimal demo showcasing **`useActionState`** and **`useOptimistic`** in React 
 
 ## What it does
 
-- **List of posts** — Fetched on load via an action (no `useEffect` + `useState` for data).
-- **Add post form** — Uses a form with `action` and `useActionState` for submission, loading state, and error handling.
-- **Optimistic updates** — New posts appear in the list immediately while the “server” request runs; on failure, the UI can reflect the error (form shows error state).
+- **List of posts** - Fetched on load via an action (no `useEffect` + `useState` for data).
+- **Add post form** - Uses a form with `action` and `useActionState` for submission, loading state, and error handling.
+- **Optimistic updates** - New posts appear in the list immediately while the “server” request runs; on failure, the UI can reflect the error (form shows error state).
 
-No client-side router, no data library — just React 19 hooks and a small in-memory API for the demo.
+No client-side router, no data library - just React 19 hooks and a small in-memory API for the demo.
 
 ## Stack
 
