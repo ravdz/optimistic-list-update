@@ -12,7 +12,7 @@ export const PostList = ({ posts, isLoading }: PostListProps) => {
   )
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-4">Post List</h1>
+      <h2 className="text-2xl font-bold mb-4">Post List</h2>
       {isLoading ? (
         <div>Loading...</div>
       ) : (

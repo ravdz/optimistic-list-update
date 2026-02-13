@@ -11,7 +11,7 @@ export const AddPostForm = ({
 }: AddPostFormProps) => {
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-4">Add Post</h1>
+      <h2 className="text-2xl font-bold mb-4">Add Post</h2>
       <form action={onSubmit}>
         <div>
           <label
