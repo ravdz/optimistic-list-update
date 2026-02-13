@@ -1,48 +1,18 @@
-import { useActionState } from 'react'
-import type { CreatePostInput, Post } from '../../types/posts'
-import { postsApi } from '../../lib/posts'
-
 interface AddPostFormProps {
-  addOptimisticPost: (input: Post) => void
-}
-
-type AddPostFormState = {
-  ok: boolean
+  onSubmit: (payload: FormData) => void
+  isPending: boolean
   error: string | null
 }
 
-export const AddPostForm = ({ addOptimisticPost }: AddPostFormProps) => {
-  const [state, formAction, isPending] = useActionState<
-    AddPostFormState,
-    FormData
-  >(
-    async (_state: AddPostFormState, payload: FormData) => {
-      const input: CreatePostInput = {
-        title: payload.get('title') as string,
-        body: payload.get('body') as string,
-      }
-      const simulateFail = payload.get('simulateFail') === 'on'
-
-      const tempPost: Post = {
-        ...input,
-        id: Date.now(),
-        createdAt: new Date().toISOString(),
-      }
-      addOptimisticPost(tempPost)
-      try {
-        await postsApi.create(input, { simulateFail })
-      } catch (error) {
-        console.error(error)
-        return { ok: false, error: 'Failed to add post' }
-      }
-      return { ok: true, error: null }
-    },
-    { ok: true, error: null }
-  )
+export const AddPostForm = ({
+  onSubmit,
+  isPending,
+  error,
+}: AddPostFormProps) => {
   return (
     <div>
       <h1 className="text-2xl font-bold mb-4">Add Post</h1>
-      <form action={formAction}>
+      <form action={onSubmit}>
         <div>
           <label
             htmlFor="title"
@@ -99,9 +69,7 @@ export const AddPostForm = ({ addOptimisticPost }: AddPostFormProps) => {
           >
             {isPending ? 'Adding...' : 'Add Post'}
           </button>
-          {state.error && (
-            <p className="text-red-500 text-sm mt-2">{state.error}</p>
-          )}
+          {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
         </div>
       </form>
     </div>
