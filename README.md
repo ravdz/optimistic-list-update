@@ -1,73 +1,85 @@
-# React + TypeScript + Vite
+# Optimistic List Update Demo
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A minimal demo showcasing **`useActionState`** and **`useOptimistic`** in React 19 for managing a list and adding items with optimistic UI updates and progressive enhancement.
 
-Currently, two official plugins are available:
+## What it does
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **List of posts** — Fetched on load via an action (no `useEffect` + `useState` for data).
+- **Add post form** — Uses a form with `action` and `useActionState` for submission, loading state, and error handling.
+- **Optimistic updates** — New posts appear in the list immediately while the “server” request runs; on failure, the UI can reflect the error (form shows error state).
 
-## React Compiler
+No client-side router, no data library — just React 19 hooks and a small in-memory API for the demo.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Stack
 
-## Expanding the ESLint configuration
+| Area     | Choice                  |
+| -------- | ----------------------- |
+| Runtime  | React 19                |
+| Build    | Vite 7                  |
+| Language | TypeScript              |
+| Styling  | Tailwind CSS v4         |
+| Tooling  | ESLint, Prettier, Husky |
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## How it works
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### `useActionState` for list fetch and form submit
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+- **List:** An action that returns the posts list is passed to `useActionState`. The list is loaded in a `useEffect` via `startTransition(() => fetchPosts())`, so you get `[posts, fetchPosts, isPending]` without manual `useState` for the array.
+- **Form:** The add-post form uses `useActionState` with the same pattern: `[state, formAction, isPending]`. The form’s `action={formAction}` drives submission; `isPending` disables inputs and shows “Adding...”; `state` holds `{ ok, error }` for server/validation errors.
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### `useOptimistic` for instant feedback
+
+- **State:** `useOptimistic(posts, (state, newPost) => [...state, newPost])` gives `optimisticPosts` and `addOptimisticPost`.
+- **Flow:** On submit, the form action calls `addOptimisticPost(tempPost)` so the new post shows in the list right away. The list renders `optimisticPosts`; when the real `posts` update (after a refetch or state update), React reconciles. If the request fails, the form shows the error (and in a full app you could revert the optimistic item).
+
+### Data flow (simplified)
+
+```
+App
+├── useActionState(fetchPosts)     → posts, fetchPosts, isPending
+├── useOptimistic(posts, reducer)  → optimisticPosts, addOptimisticPost
+├── useEffect → startTransition(fetchPosts)  // initial load
+├── PostList(posts={optimisticPosts})
+└── AddPostForm(addOptimisticPost)
+        └── useActionState(formAction)  → state, formAction, isPending
+                └── form action calls addOptimisticPost(tempPost) then postsApi.create()
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Project structure
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
 ```
+src/
+├── App.tsx                 # useActionState (fetch) + useOptimistic + layout
+├── components/
+│   ├── AddPostForm/        # useActionState (form), calls addOptimisticPost
+│   ├── PostList/           # Renders optimistic list
+│   └── PostItem/           # Single post card
+├── lib/
+│   └── posts.ts            # In-memory API (getAll, create, optional simulateFail)
+└── types/
+    └── posts.ts            # Post, CreatePostInput
+```
+
+## Run it
+
+```bash
+npm install
+npm run dev
+```
+
+Then open the app and use “Add Post”. Optionally enable “Simulate Fail” to see error handling.
+
+## Scripts
+
+| Command          | Description          |
+| ---------------- | -------------------- |
+| `npm run dev`    | Start dev server     |
+| `npm run build`  | Type-check + build   |
+| `npm run lint`   | Run ESLint           |
+| `npm run format` | Format with Prettier |
+
+## References
+
+- [React: useActionState](https://react.dev/reference/react/useActionState)
+- [React: useOptimistic](https://react.dev/reference/react/useOptimistic)
+- [React: Form actions and useActionState](https://react.dev/reference/react-dom/components/form#form-action)

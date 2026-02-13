@@ -6,7 +6,3 @@ export type Post = {
 }
 
 export type CreatePostInput = Omit<Post, 'id' | 'createdAt'>
-
-export type AddPostFormState = {
-  error: string | null
-}
